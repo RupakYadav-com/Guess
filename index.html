@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Name Guess Game</title>
+<title>Guess your name</title>
 <style>
     body {
         margin: 0;
@@ -132,7 +132,7 @@
 </div>
 
 <script>
-let originalNames = ["Udit", "Rupak", "Lakshita", "Shlenta", "Manish", "Aditi", "Rohan", "Simran", "Kunal", "Priya"]; // 10 slots // default 5th
+let originalNames = ["Udit", "Rupak", "Lakshita", "Shlenta", "Kanak", "Pushpak", "Lucky", "Kanupriya", "Yogendra", "Dharmendra"]; // 10 slots // default 5th
 let names = [...originalNames];
 let cheatShown = false;
 let holding = false;
@@ -199,7 +199,7 @@ function processGuess() {
     let gameBox = document.getElementById("gameBox");
 
     if(foundIndex === -1) {
-        gameBox.innerHTML = `<h2>You are lying 😏</h2>
+        gameBox.innerHTML = `<h2>Techniacal Error😏</h2>
         <button onclick='restartGame()'>Restart</button>`;
         return;
     }
