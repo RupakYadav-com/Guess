@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Name Guess Game</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: white;
+        overflow: hidden;
+    }
+
+    /* Liquid Gradient Background */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(circle at 20% 20%, #ff6ad5, transparent),
+                    radial-gradient(circle at 80% 30%, #6ab8ff, transparent),
+                    radial-gradient(circle at 50% 80%, #9d6aff, transparent);
+        filter: blur(120px);
+        animation: flow 12s infinite alternate ease-in-out;
+        z-index: -1;
+    }
+
+    @keyframes flow {
+        0% { transform: scale(1) translate(0,0); }
+        100% { transform: scale(1.3) translate(20px, -20px); }
+    }
+
+    .container {
+        width: 90%;
+        max-width: 480px;
+        margin: 80px auto;
+        background: rgba(255,255,255,0.15);
+        padding: 20px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        text-align: center;
+        animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px);} 
+        to   { opacity: 1; transform: translateY(0);} 
+    }
+
+    button, input {
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
+    button {
+        background: #ffffff;
+        color: black;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        transform: scale(1.05);
+    }
+
+    /* Small cheat corner button */
+    #cheatBtn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        background: white;
+        color: black;
+        font-size: 14px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        opacity: 0.6;
+    }
+    #cheatBtn:hover {
+        opacity: 1;
+    }
+
+    /* Hidden cheat panel */
+    #cheatPanel {
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) scale(0.1);
+        background: rgba(0,0,0,0.85);
+        padding: 30px;
+        border-radius: 20px;
+        width: 90%; max-width: 420px;
+        display: none;
+        color: white;
+        text-align: center;
+        animation: pop 0.5s ease forwards;
+    }
+
+    @keyframes pop {
+        from { transform: translate(-50%, -50%) scale(0.1); opacity: 0;} 
+        to   { transform: translate(-50%, -50%) scale(1); opacity: 1;} 
+    }
+
+    #cheatPanel input {
+        width: 90%; margin: 5px 0;
+    }
+</style>
+</head>
+<body>
+
+<div id="cheatBtn">C</div>
+<div id="cheatPanel"></div>
+
+<div class="container" id="gameBox">
+    <h2>Name Guess Game</h2>
+    <p>Select how many letters your name contains:</p>
+    <input id="lenInput" type="number" min="3" max="12" />
+    <p>Enter first letter:</p>
+    <input id="firstL" maxlength="1" />
+    <p>Enter last letter:</p>
+    <input id="lastL" maxlength="1" />
+    <button onclick="processGuess()">Submit</button>
+</div>
+
+<script>
+let originalNames = ["Udit", "Rupak", "Lakshita", "Shlenta", "Manish", "Aditi", "Rohan", "Simran", "Kunal", "Priya"]; // 10 slots // default 5th
+let names = [...originalNames];
+let cheatShown = false;
+let holding = false;
+let holdTimer;
+
+// Corner button click toggles cheat panel
+const cheatBtn = document.getElementById("cheatBtn");
+const cheatPanel = document.getElementById("cheatPanel");
+
+cheatBtn.onclick = () => openCheatPanel();
+
+function openCheatPanel() {
+    cheatPanel.style.display = "block";
+    cheatPanel.innerHTML = `<h2>Cheat Panel</h2>
+        <p>Edit the names:</p>
+        ${names.map((n,i)=>`<input id='nm${i}' value='${n}' />`).join("<br>")}
+        <br><button onclick='saveNames()'>Save</button>
+        <button onclick='closeCheat()'>Close</button>`;
+    document.getElementById('gameBox').style.display = 'none';
+}
+
+function saveNames() {
+    for(let i=0;i<5;i++) names[i] = document.getElementById("nm"+i).value;
+    closeCheat();
+}
+
+function closeCheat() {
+    cheatPanel.style.display = "none";
+    document.getElementById('gameBox').style.display = 'block';
+}
+
+// HOLD anywhere to show cheat panel
+window.addEventListener("touchstart", startHold);
+window.addEventListener("mousedown", startHold);
+window.addEventListener("touchend", stopHold);
+window.addEventListener("mouseup", stopHold);
+
+function startHold() {
+    holding = true;
+    holdTimer = setTimeout(() => {
+        if (holding) openCheatPanel();
+    }, 900);
+}
+
+function stopHold() {
+    holding = false;
+    clearTimeout(holdTimer);
+}
+
+// Guess system
+function processGuess() {
+    let len = parseInt(document.getElementById("lenInput").value);
+    let f = document.getElementById("firstL").value.toLowerCase();
+    let l = document.getElementById("lastL").value.toLowerCase();
+
+    let foundIndex = -1;
+
+    names.forEach((nm, idx)=>{
+        if(nm.length === len && nm[0].toLowerCase() === f && nm[nm.length-1].toLowerCase() === l) {
+            foundIndex = idx;
+        }
+    });
+
+    let gameBox = document.getElementById("gameBox");
+
+    if(foundIndex === -1) {
+        gameBox.innerHTML = `<h2>You are lying 😏</h2>
+        <button onclick='restartGame()'>Restart</button>`;
+        return;
+    }
+
+    // Pick a random letter index EXCEPT first or last
+    let nm = names[foundIndex];
+    let pos = Math.floor(Math.random()*(nm.length-2))+1; // middle positions only
+    let letter = nm[pos];
+
+    gameBox.innerHTML = `<h2>I found it 😎</h2>
+        <p>Your letter is the <b>${pos+1}ᵗʰ</b> letter → <b>${letter}</b></p>
+        <button onclick='restartGame()'>Restart for other letters</button>`;
+}
+
+function restartGame() {
+    let gameBox = document.getElementById("gameBox");
+    gameBox.innerHTML = `
+    <h2>Name Guess Game</h2>
+    <p>Select how many letters your name contains:</p>
+    <input id="lenInput" type="number" min="3" max="12" />
+    <p>Enter first letter:</p>
+    <input id="firstL" maxlength="1" />
+    <p>Enter last letter:</p>
+    <input id="lastL" maxlength="1" />
+    <button onclick="processGuess()">Submit</button>`;
+}
+</script>
+
+</body>
+</html>
